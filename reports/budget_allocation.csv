@@ -1,0 +1,5 @@
+channel,current_weekly_spend,recommended_weekly_spend,change,change_pct,at_bound
+tv,32626.26,18986.06,-13640.2,-0.4181,False
+search,17687.29,18986.06,1298.77,0.0734,False
+social,13066.7,18986.06,5919.35,0.453,False
+affiliate,6422.08,12844.16,6422.08,1.0,True
