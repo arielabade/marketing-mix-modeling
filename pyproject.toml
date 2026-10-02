@@ -1,0 +1,20 @@
+[project]
+name = "marketing-mix-modeling"
+version = "0.1.0"
+description = "Bayesian MMM with adstock and saturation, scored against a known data-generating process"
+requires-python = ">=3.10"
+dependencies = ["pymc-marketing>=0.19", "pandas>=2.0", "pyarrow>=14.0", "matplotlib>=3.7", "scipy>=1.10"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
