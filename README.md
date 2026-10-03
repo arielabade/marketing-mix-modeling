@@ -1,9 +1,4 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/header-dark.svg">
-    <img alt="Marketing Mix Modeling: a Bayesian MMM scored against a known data-generating process" src="assets/brand/header-light.svg" width="100%">
-  </picture>
-</p>
+<p align="center"><img alt="Marketing Mix Modeling: a Bayesian MMM scored against a known data-generating process" src="assets/brand/header.svg" width="100%"></p>
 
 <p align="center">
   <img alt="Method stage: validate" src="https://img.shields.io/badge/stage-validate-5B6CFF?style=flat-square&labelColor=050505">
@@ -16,19 +11,9 @@
 written down.** It ranks every channel that carries signal perfectly. It fails on the one that does
 not, and a diagnostic computed before fitting says which one that is.
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/kpis-dark.svg">
-    <img alt="Rank correlation 1.000 on identifiable channels; affiliate ROI error +636%; affiliate signal-to-noise 0.04" src="assets/brand/kpis-light.svg" width="100%">
-  </picture>
-</p>
+<p align="center"><img alt="Rank correlation 1.000 on identifiable channels; affiliate ROI error +636%; affiliate signal-to-noise 0.04" src="assets/brand/kpis.svg" width="100%"></p>
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/arc-dark.svg">
-    <img alt="Context, problem, strategy and result of the case" src="assets/brand/arc-light.svg" width="100%">
-  </picture>
-</p>
+<p align="center"><img alt="Context, problem, strategy and result of the case" src="assets/brand/arc.svg" width="100%"></p>
 
 ---
 
@@ -85,12 +70,7 @@ signal_to_noise         sd(weekly contribution) / sd(weekly revenue noise)
 
 ## 04 — Result
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/chart-dark.svg">
-    <img alt="Signal-to-noise per channel: tv 0.88, search 0.45, social 0.30, affiliate 0.04, below the 0.1 measurable threshold" src="assets/brand/chart-light.svg" width="100%">
-  </picture>
-</p>
+<p align="center"><img alt="Signal-to-noise per channel: tv 0.88, search 0.45, social 0.30, affiliate 0.04, below the 0.1 measurable threshold" src="assets/brand/chart.svg" width="100%"></p>
 
 | Channel | True ROI | Estimated ROI | Error | True rank | Estimated rank |
 | --- | --- | --- | --- | --- | --- |
@@ -166,12 +146,7 @@ notebooks/            recovery exploration
 
 ---
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/track-dark.svg">
-    <img alt="ABADE method: validate, scale, retain, build. This repository: validate" src="assets/brand/track-light.svg" width="100%">
-  </picture>
-</p>
+<p align="center"><img alt="ABADE method: validate, scale, retain, build. This repository: validate" src="assets/brand/track.svg" width="100%"></p>
 
 <p align="center">
   <a href="https://github.com/arielabade/ab-testing-toolkit">← Prove causation with an experiment</a> &nbsp;·&nbsp;
