@@ -47,6 +47,35 @@ def test_simulation_is_reproducible():
     np.testing.assert_allclose(first["revenue"], second["revenue"])
 
 
+def test_simulation_is_reproducible_across_processes():
+    """Same data on a fresh interpreter, not just within one.
+
+    An earlier version used hash(channel) for the campaign phase offset.
+    Python randomises string hashing per process, so every run produced a
+    different dataset while passing the in-process test above. Committed
+    results would not have matched what anyone re-running the project got.
+    """
+    import subprocess
+    import sys
+    import textwrap
+
+    script = textwrap.dedent(
+        """
+        import sys
+        sys.path.insert(0, "src")
+        from mmm.simulate import simulate
+        print(f"{simulate()['revenue'].sum():.6f}")
+        """
+    )
+    runs = {
+        subprocess.run(
+            [sys.executable, "-c", script], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        for _ in range(2)
+    }
+    assert len(runs) == 1, f"simulation differs between processes: {runs}"
+
+
 def test_simulation_has_the_declared_shape():
     frame = simulate()
     assert len(frame) == WEEKS

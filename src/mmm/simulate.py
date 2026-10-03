@@ -7,6 +7,8 @@ form, "recovery" would be measuring the wrong thing.
 
 from __future__ import annotations
 
+import hashlib
+
 import numpy as np
 import pandas as pd
 
@@ -24,6 +26,16 @@ def geometric_adstock(spend: np.ndarray, alpha: float, max_lag: int = 8) -> np.n
 def logistic_saturation(x: np.ndarray, lam: float) -> np.ndarray:
     """Diminishing returns, scaled to [0, 1)."""
     return (1 - np.exp(-lam * x)) / (1 + np.exp(-lam * x))
+
+
+def _phase(channel: str) -> float:
+    """Stable per-channel phase offset in [0, 7).
+
+    Built from a digest so the simulated media plan is identical on every run
+    and every machine.
+    """
+    digest = hashlib.sha256(channel.encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big") % 7
 
 
 def simulate() -> pd.DataFrame:
@@ -48,8 +60,11 @@ def simulate() -> pd.DataFrame:
     for channel, truth in TRUTH.items():
         spend = np.clip(
             rng.normal(truth.base_spend, truth.spend_sd, WEEKS)
-            # A mild campaign pattern: real plans are not white noise.
-            * (1 + 0.25 * np.sin(2 * np.pi * week_index / 26.0 + hash(channel) % 7)),
+            # A mild campaign pattern: real plans are not white noise. The phase
+            # offset uses a stable digest rather than hash(), whose string
+            # hashing is randomised per process unless PYTHONHASHSEED is set —
+            # which would make the whole dataset differ between runs.
+            * (1 + 0.25 * np.sin(2 * np.pi * week_index / 26.0 + _phase(channel))),
             0, None,
         )
         frame[channel] = spend

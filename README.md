@@ -22,30 +22,30 @@ be checked against an answer key rather than against intuition.
 
 | Channel | True ROI | Estimated ROI | Error | True rank | Estimated rank |
 | --- | --- | --- | --- | --- | --- |
-| tv | 0.680 | 0.865 | +27.2% | 1 | 2 |
-| search | 0.670 | 0.620 | −7.5% | 2 | 3 |
-| social | 0.386 | 0.300 | −22.2% | 3 | 4 |
-| **affiliate** | **0.170** | **0.915** | **+437.6%** | **4** | **1** |
+| tv | 0.717 | 1.012 | +41.2% | 1 | 2 |
+| search | 0.689 | 0.812 | +17.9% | 2 | 3 |
+| social | 0.389 | 0.324 | −16.7% | 3 | 4 |
+| **affiliate** | **0.173** | **1.271** | **+636.5%** | **4** | **1** |
 
 Read the overall numbers and the model looks broken: ROI rank correlation of **−0.200**, mean absolute
-ROI error of **0.266**. It places the worst channel first.
+ROI error of **0.396**. It places the worst channel first.
 
 **Drop the one channel it could never have measured and the picture inverts:**
 
 | | Including affiliate | Excluding affiliate |
 | --- | --- | --- |
 | ROI rank correlation | −0.200 | **1.000** |
-| Mean absolute ROI error | 0.266 | **0.107** |
-| Mean relative ROI error | — | 19.0% |
+| Mean absolute ROI error | 0.396 | **0.161** |
+| Mean relative ROI error | — | 25.3% |
 
 **The ordering is perfect for every channel that carries signal.** The ranking collapses because of a
 single channel, and a diagnostic computed *before* fitting says which one:
 
 | Channel | Share of revenue | Signal-to-noise |
 | --- | --- | --- |
-| tv | 21.8% | 1.04 |
-| search | 14.4% | 0.48 |
-| social | 6.3% | 0.29 |
+| tv | 22.6% | 0.88 |
+| search | 14.5% | 0.45 |
+| social | 6.2% | 0.30 |
 | **affiliate** | **1.2%** | **0.04** |
 
 Affiliate's weekly contribution varies by about **4% of the weekly revenue noise**. There is no
@@ -58,10 +58,10 @@ Feeding the fitted model into the budget optimiser makes the consequence unambig
 
 | Channel | True ROI rank | Current weekly | Recommended | Change |
 | --- | --- | --- | --- | --- |
-| search | 1 | 17,687 | 18,986 | +7.3% |
-| tv | 2 | 32,626 | 18,986 | **−41.8%** |
-| social | 3 | 13,067 | 18,986 | +45.3% |
-| **affiliate** | **4 (worst)** | 6,422 | 12,844 | **+100%, at the bound** |
+| tv | 1 | 26,174 | 17,893 | **−31.6%** |
+| search | 2 | 20,974 | 17,893 | −14.7% |
+| social | 3 | 12,121 | 17,893 | +47.6% |
+| **affiliate** | **4 (worst)** | 5,590 | 11,181 | **+100%, at the bound** |
 
 **The optimiser doubles spend on the worst channel**, and only the 200% cap stops it going further.
 The three measurable channels converge to near-equal spend, which is the optimiser correctly
@@ -73,10 +73,15 @@ channel. A channel below roughly 0.1 cannot be measured by this method at this s
 should be **pinned to its current spend and excluded from the optimisation**, not argued about in a
 meeting. Measuring a small channel needs a geo experiment or a holdout test, not a bigger model.
 
-**On the sampler.** The first fit produced 93 divergences. Raising `target_accept` to 0.95 brought it
-to 7. Divergences mean the chains could not explore parts of the posterior, so the intervals are not
-trustworthy — a diagnostic to fix, not a warning to scroll past. Seven is not zero, and is noted here
-rather than omitted.
+**On the sampler, and why it is the same finding.** The first fit, at the default `target_accept`,
+produced **93 divergences**. Raising it to 0.95 cut them to **22**. Divergences mean the chains could
+not explore parts of the posterior, so the intervals are not trustworthy.
+
+Tuning the sampler further would be treating the symptom. A parameter the likelihood carries no
+information about is pinned only by its prior, which leaves a flat ridge in the posterior that NUTS
+cannot traverse — and the unmeasurable channel is exactly such a parameter. **The divergences and the
+636% ROI error on affiliate have the same cause.** The fix is to take the channel out of the model,
+not to make the sampler work harder at exploring a direction the data never constrained.
 
 ---
 
@@ -154,18 +159,20 @@ signal_to_noise         sd(weekly contribution) / sd(weekly revenue noise)
   and logistic saturation, so this measures estimation under a correct specification. Real campaigns
   do not come with their functional form attached, and a mis-specification study would give a harsher
   and more honest number.
-- **19% average ROI error on the identifiable channels is not precision.** It is enough to rank
+- **25% average ROI error on the identifiable channels is not precision.** It is enough to rank
   channels and to size a reallocation; it is not enough to defend a claim like "TV returns exactly
-  0.68".
+  0.72". Note the direction: both large channels are over-estimated, which is what happens when the
+  unmeasurable channel absorbs variance the model then has to redistribute.
 - **Correlation is not causation, even here.** An MMM infers from observed covariation. It cannot
   separate a channel that drives demand from one that is switched on when demand is already rising.
   Only a geo holdout or a randomised experiment can, which is what
   [ab-testing-toolkit](https://github.com/arielabade/ab-testing-toolkit) addresses.
-- **Seven divergences remain.** Reparameterisation, or a tighter prior on the small channel, would be
-  the next thing to try.
+- **Twenty-two divergences remain**, and raising `target_accept` again would not be the right answer:
+  the ridge comes from a parameter the data does not identify. Dropping affiliate from the model, or
+  giving it a tightly informative prior, is the principled fix.
 - **Next step:** run the same recovery test with a mis-specified saturation curve, and report how much
-  of the 19% error is estimation versus specification. That is the number a practitioner actually
-  needs.
+  of the 25% error is estimation versus specification. That is the number a practitioner actually
+  needs, and this result is its optimistic floor.
 
 ---
 
