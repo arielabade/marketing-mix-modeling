@@ -11,7 +11,29 @@
 written down.** It ranks every channel that carries signal perfectly. It fails on the one that does
 not, and a diagnostic computed before fitting says which one that is.
 
-<p align="center"><img alt="Rank correlation 1.000 on identifiable channels; affiliate ROI error +636%; affiliate signal-to-noise 0.04" src="assets/brand/kpis.svg" width="100%"></p>
+<p align="center"><img alt="Rank correlation 1.000 on the three channels with measurable signal; +636% ROI error on affiliate; its signal-to-noise 0.04" src="assets/figures/headline.svg" width="100%"></p>
+
+<p align="center"><img alt="True against estimated ROI by channel: tv, search and social ranked correctly, affiliate estimated at 1.27 against a true 0.17" src="assets/figures/roi_recovery.svg" width="100%"></p>
+
+> **Decision.** Compute signal-to-noise per channel before trusting any MMM, and refuse to report an ROI for channels below the measurability floor rather than reporting a confident wrong one.
+
+<details>
+<summary><b>What is in this repository</b></summary>
+
+| | |
+| --- | --- |
+| **The question** | How much revenue did each channel actually cause — and can an MMM be trusted to say? |
+| **The data** | SIMULATED from a known data-generating process. On real data an MMM cannot be scored, because the true answer is unknown. Here it is written down. |
+| **The method** | Bayesian MMM with adstock and saturation (PyMC-Marketing), scored against the truth, plus a pre-fit diagnostic. |
+| **The finding** | Perfect ranking where signal exists; a 636% error where it does not — and the diagnostic names which is which before fitting. |
+
+```
+src/mmm/    the simulator (the known truth), the model, the config, figures
+reports/    fitted results: ROI recovery, signal-to-noise, budget allocation
+tests/      that the simulator is reproducible and the model recovers what it should
+```
+
+</details>
 
 <p align="center"><img alt="Context, problem, strategy and result of the case" src="assets/brand/arc.svg" width="100%"></p>
 
@@ -66,11 +88,24 @@ ROI                     incremental contribution / spend
 signal_to_noise         sd(weekly contribution) / sd(weekly revenue noise)
 ```
 
+```mermaid
+flowchart LR
+  A["known data-generating process<br/>adstock, saturation, true betas"] --> B["simulated weekly spend<br/>and revenue"]
+  B --> C["signal-to-noise<br/>per channel"]
+  B --> D["Bayesian MMM<br/>PyMC-Marketing"]
+  D --> E["estimated ROI"]
+  A --> F["true ROI"]
+  E --> G["scored against the truth"]
+  F --> G
+  C --> H{"below the<br/>measurability floor?"}
+  H -->|yes| I(["refuse to report an ROI"])
+  G --> J["reports/ + README figures"]
+```
+
 ---
 
 ## 04 — Result
 
-<p align="center"><img alt="Signal-to-noise per channel: tv 0.88, search 0.45, social 0.30, affiliate 0.04, below the 0.1 measurable threshold" src="assets/brand/chart.svg" width="100%"></p>
 
 | Channel | True ROI | Estimated ROI | Error | True rank | Estimated rank |
 | --- | --- | --- | --- | --- | --- |
@@ -101,6 +136,12 @@ traverse. **The divergences and the 636% error have the same cause.**
 > **Decision.** Compute signal-to-noise per channel before trusting any MMM. Pin channels below about
 > 0.1 to current spend and leave them out of the optimisation. Measure them with a geo experiment or
 > a holdout, not with a bigger model.
+
+---
+
+<p align="center"><img alt="Signal-to-noise before the fit against absolute ROI error after it, sharing one channel order" src="assets/figures/signal_diagnostic.svg" width="100%"></p>
+
+<p align="center"><img alt="Optimised weekly allocation: social +48%, affiliate at its +100% bound, tv -32%" src="assets/figures/budget_shift.svg" width="100%"></p>
 
 ---
 
