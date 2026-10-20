@@ -1,0 +1,29 @@
+# Small profile: CI and the end-to-end test. Same code path, less sampling.
+# The parquet fixture in tests/fixtures/mart_small holds the last ~21 months
+# of the mart (from 2025-01-01: the geo-lift pre-period plus the test).
+data:
+  source: parquet
+  start: "2025-01-01"
+
+model:
+  sampler:
+    draws: 150
+    tune: 200
+    chains: 2
+    target_accept: 0.9
+
+backtest:
+  horizon_days: 28
+  folds: 1
+
+geolift:
+  power:
+    effect_sizes: [0.05, 0.10]
+    test_weeks: [4, 6]
+    n_simulations: 30
+  draws: 200
+  tune: 200
+  chains: 2
+
+optimizer:
+  posterior_draws: 50

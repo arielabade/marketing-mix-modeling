@@ -1,0 +1,88 @@
+# Pipeline configuration. Values here are defaults; environment variables
+# (see .env.example) override the ones that change between machines:
+# data source, credentials, paths and the run profile.
+#
+# MMM_PROFILE=small merges config/small.yaml on top of this file.
+
+data:
+  # mysql | bigquery | parquet. Only src/mmm/data/source.py knows the difference.
+  source: mysql
+  # Mart tables built by dbt in the ecommerce repository (schema tecidos_marts).
+  tables:
+    media: fct_mmm_midia_canal_regiao_diario
+    sales: fct_mmm_vendas_regiao_diario
+    controls: fct_mmm_controles_diario
+    geo_tests: dim_testes_geo
+  start: "2023-10-01"
+  end: null                 # null = last day in the mart
+
+target: receita             # paid revenue, R$ per day
+
+# Paid channels the optimiser can move budget between (canal_mmm in the mart).
+channels: [meta, tiktok, google_search, google_shopping, youtube, afiliados]
+# Owned channel: modelled as a control (e-mails delivered), never optimised,
+# because its marginal cost is close to zero and its "spend" is a tool licence.
+owned_channels: [email_crm]
+
+model:
+  # Daily data: 14 days covers > 99% of the carryover even for a 0.7 decay
+  # (0.7^14 = 0.7%). A longer window adds parameters' worth of edge effects for nothing.
+  adstock_l_max: 14
+  yearly_seasonality: 3
+  sampler:
+    draws: 1000
+    tune: 1500
+    chains: 4
+    target_accept: 0.95
+    nuts_sampler: nutpie
+    random_seed: 20261019
+  # Prior on each channel's saturated effect, as a share of mean daily revenue,
+  # proportional to its share of spend: every channel starts from the SAME
+  # return on spend. The data (and, in the calibrated model, the geo-lift) have
+  # to move it. This is the honest default when nothing is known; it is also
+  # exactly why two channels that always move together get the same ROI.
+  beta_prior_scale: 2.0
+  lam_prior: {alpha: 3.0, beta: 1.0}     # logistic saturation steepness, Gamma
+  alpha_prior: {alpha: 1.0, beta: 3.0}   # adstock decay, Beta (mean 0.25)
+
+backtest:
+  # Time-ordered folds: train up to the cut, forecast the next `horizon_days`.
+  # Never random: shuffling days lets the model see the future through the
+  # adstock carryover and through seasonality, and flatters the error.
+  horizon_days: 91
+  folds: 2
+
+geolift:
+  test_id: 1
+  # Weekly aggregation: daily revenue per UF is too noisy (a few orders a day in
+  # small states) for donor weights to be stable.
+  frequency: W-MON
+  min_pre_weeks: 20
+  power:
+    effect_sizes: [0.03, 0.05, 0.08, 0.10, 0.15]
+    test_weeks: [2, 4, 6, 8]
+    n_simulations: 200
+    alpha: 0.05
+  # Minimum effect worth acting on, as relative revenue lift in treated states.
+  minimum_worthwhile_lift: 0.05
+  draws: 1000
+  tune: 1000
+  chains: 4
+
+optimizer:
+  horizon_days: 30          # "next month"
+  # Bounds relative to the last 90 days' daily spend. Outside this band the
+  # response curve is extrapolated beyond anything the data saw.
+  min_share_of_current: 0.5
+  max_share_of_current: 1.5
+  reference_days: 90
+  posterior_draws: 400      # draws used for the uncertainty band
+  # Total budget = current run-rate x multiplier (1.0 = same money, better split)
+  budget_multiplier: 1.0
+
+registry:
+  path: models/registry
+
+reports:
+  path: reports
+  dashboard: docs/dashboard

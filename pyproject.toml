@@ -1,12 +1,32 @@
 [project]
 name = "marketing-mix-modeling"
-version = "0.1.0"
-description = "Bayesian MMM with adstock and saturation, scored against a known data-generating process"
-requires-python = ">=3.10"
-dependencies = ["pymc-marketing>=0.19", "pandas>=2.0", "pyarrow>=14.0", "matplotlib>=3.7", "scipy>=1.10"]
+version = "0.2.0"
+description = "Geo-lift-calibrated Bayesian MMM and budget optimiser on a simulated Brazilian e-commerce, scored against the known truth"
+requires-python = ">=3.11"
+dependencies = [
+    "pymc-marketing==0.19.2",
+    "causalpy==0.9.0",
+    "nutpie==0.16.8",
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "scipy>=1.13",
+    "statsmodels>=0.14",
+    "pyarrow>=16",
+    "SQLAlchemy>=2.0",
+    "PyMySQL>=1.1",
+    "PyYAML>=6.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "plotly>=5.24",
+    "matplotlib>=3.8",
+]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4"]
+bigquery = ["google-cloud-bigquery>=3.25", "db-dtypes>=1.3"]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.6"]
+
+[project.scripts]
+mmm = "mmm.jobs.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -18,3 +38,17 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = ["e2e: end-to-end run on the small data profile (samples a real MCMC; slower)"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.setuptools.package-data]
+mmm = ["report/assets/*"]

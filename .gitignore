@@ -1,10 +1,12 @@
-data/*
-!data/README.md
-models/
-*.nc
+.env
 .venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 *.egg-info/
 .DS_Store
+models/
+reports/**/*.parquet
+reports/train/contributions_*.csv
+reports/evaluate/backtest_predictions.csv
