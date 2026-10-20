@@ -39,7 +39,13 @@ MODELLING = [p for p in SRC.rglob("*.py") if p not in ALLOWED and "validation" n
 
 @pytest.mark.parametrize("path", MODELLING, ids=lambda p: str(p.relative_to(SRC)))
 def test_modelling_code_never_references_ground_truth(path):
-    hits = [s for s in _strings_and_names(path) if any(f.lower() in s.lower() for f in FORBIDDEN)]
+    # Prose shown to the reader ("o retorno verdadeiro...") is not an access path; identifiers, file
+    # names and paths are. A string counts when it has no spaces, or looks like a path or an env var.
+    def access_like(s: str) -> bool:
+        return " " not in s.strip() or ("/" in s and "<" not in s) or "_GROUND" in s.upper()
+
+    hits = [s for s in _strings_and_names(path)
+            if access_like(s) and any(f.lower() in s.lower() for f in FORBIDDEN)]
     assert not hits, f"{path.name} references the ground truth: {hits}"
 
 
