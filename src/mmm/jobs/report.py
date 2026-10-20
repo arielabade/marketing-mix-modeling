@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 from pathlib import Path
 
 import numpy as np
@@ -28,7 +27,7 @@ import pandas as pd
 from .. import settings
 from ..data import load_mart
 from ..registry import Registry
-from .common import log, read_json, setup, write_json
+from .common import log, read_json, setup
 from .train import NAMES
 
 ASSETS = Path(__file__).resolve().parents[1] / "report" / "assets"
@@ -146,28 +145,42 @@ def build_data(cfg: dict) -> dict:
             data.setdefault("curves", {})[k] = _curves(cfg, reg, NAMES[k])
     data["regional"] = _regional(cfg, geo)
     data["spend"] = _spend_story(cfg)
-    return data
+    data["facts"] = _facts(cfg)
+    return json.loads(json.dumps(data, default=_plain))  # plain JSON types, sorted on dump: deterministic page
+
+
+def _plain(o):
+    if isinstance(o, np.generic):
+        return o.item()
+    if isinstance(o, float) and np.isnan(o):
+        return None
+    return str(o)
+
+
+def _facts(cfg: dict) -> dict:
+    """Hero facts: period, paid revenue, paid media spend, paid orders."""
+    mart = load_mart(cfg)
+    paid = mart.media[mart.media.tipo_investimento == "pago"]
+    d = mart.dates
+    return {"start": str(d.min().date()), "end": str(d.max().date()),
+            "months": round((d.max() - d.min()).days / 30.44),
+            "revenue": float(mart.sales.receita.sum()), "spend": float(paid.investimento.sum()),
+            "orders": int(mart.sales.pedidos.sum())}
 
 
 def run(cfg: dict) -> Path:
+    from ..report import page
+
     data = build_data(cfg)
     out = settings.path(cfg, "reports.dashboard")
-    out.mkdir(parents=True, exist_ok=True)
-    write_json(out / "data.json", data)
-    shutil.copy(ASSETS / "br_ufs.geojson", out / "br_ufs.geojson")
-    html = (ASSETS / "dashboard.html").read_text(encoding="utf-8")
-    geo = (ASSETS / "br_ufs.geojson").read_text(encoding="utf-8")
-    # inline data and outlines too, so the page also works opened from disk (file://)
-    payload = json.dumps(json.loads((out / "data.json").read_text()), ensure_ascii=False, separators=(",", ":"))
-    html = html.replace("/*__DATA__*/null", payload).replace("/*__GEO__*/null", geo)
-    (out / "index.html").write_text(html, encoding="utf-8")
+    index = page.build(data, out)
     if cfg["profile"] == "default":  # README figures reflect the full run only
         from .. import figures
 
         for f in figures.main(cfg):
             log.info("figure %s", f)
-    log.info("dashboard written to %s", out / "index.html")
-    return out / "index.html"
+    log.info("dashboard written to %s", index)
+    return index
 
 
 def main(argv=None):

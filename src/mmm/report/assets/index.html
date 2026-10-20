@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onde investir o próximo real · Tecelã Tecidos</title>
+<meta name="description" content="Quanto cada canal de mídia realmente gera de receita, medido com um teste geográfico e um modelo de mix de mídia, e como dividir a verba do próximo mês. Dados simulados.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#050505">
+<link rel="canonical" href="https://arielabade.github.io/marketing-mix-modeling/dashboard/">
+<meta property="og:title" content="Onde investir o próximo real">
+<meta property="og:description" content="[[h1]]. Dados simulados.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=[[version_css]]">
+<script>
+  (function () {
+    try { var t = localStorage.getItem("mmm-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+  })();
+</script>
+<script src="app.js?v=[[version_js]]" data-plotly="[[plotly_file]]" defer></script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="hero" id="topo">
+  <div class="wrap">
+    <div class="brand-row">
+      <span class="brand">[[symbol]]<span class="brand-name">ABADE</span></span>
+      <span class="eyebrow">Onde investir o próximo real</span>
+    </div>
+    <h1>[[h1]]</h1>
+    <p class="lede">[[lede]]</p>
+    <dl class="facts">
+      <div><dt>Vendas no período</dt><dd>[[revenue]]</dd></div>
+      <div><dt>Investimento em mídia paga</dt><dd>[[spend]]</dd></div>
+      <div><dt>Canais pagos</dt><dd>[[channels_n]]</dd></div>
+      <div><dt>Período</dt><dd>[[months]] meses</dd></div>
+    </dl>
+    <p class="notice" role="note"><strong>Dados simulados.</strong> A Tecelã Tecidos é uma loja fictícia. Os dados foram gerados
+      a partir do funcionamento de um e-commerce real e não descrevem nenhuma empresa.</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Seções do relatório">
+  <div class="wrap toc-inner">
+    <ol>
+      <li><a href="#contexto">Contexto</a></li>
+      <li><a href="#resumo">Resumo</a></li>
+      <li><a href="#problema">O problema</a></li>
+      <li><a href="#teste">O teste</a></li>
+      <li><a href="#correcao">O que mudou</a></li>
+      <li><a href="#saturacao">Saturação</a></li>
+      <li><a href="#recomendacao">Recomendação</a></li>
+      <li><a href="#incerteza">Incerteza</a></li>
+    </ol>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" hidden>
+      <span aria-hidden="true" class="theme-icon"></span><span class="theme-label">Tema escuro</span>
+    </button>
+  </div>
+</nav>
+
+<main id="conteudo" class="wrap">
+
+<!-- ========================================================== 01 Contexto -->
+<section id="contexto" aria-labelledby="h-contexto">
+  <p class="kicker">01 · Contexto</p>
+  <h2 id="h-contexto">Antes dos números: que loja é essa, o que se quer saber e de onde vem cada dado</h2>
+
+  <p class="bridge"><strong>Continuação de um estudo anterior.</strong> A análise de custo e retorno por cliente
+    (<a href="https://arielabade.github.io/unit-economics-olist/dashboard/">unit-economics-olist</a>) mostrou que o último clique
+    subestima a Meta e recomendou medir o efeito dela com grupo de controle por região. Este relatório faz essa medição e usa o
+    resultado para dividir a verba.</p>
+
+  <div class="grid-3">
+    <article class="panel">
+      <h3>A loja</h3>
+      <p>Loja online de tecidos que vende por metro e em rolo para quem costura por hobby, costureiras, ateliês e pequenas confecções,
+        com entrega para os 27 estados.</p>
+      <p>Investe em <strong>Meta</strong>, <strong>TikTok</strong>, <strong>Google</strong> (busca, Shopping e Performance Max),
+        <strong>YouTube</strong> e <strong>afiliados</strong>. O e-mail entra na conta, mas não na divisão de verba: ele quase não custa.</p>
+    </article>
+    <article class="panel panel-accent">
+      <h3>A pergunta</h3>
+      <p class="question">Quanto de receita cada canal realmente causa, e onde colocar o próximo real?</p>
+      <p>"Causa" é a palavra que importa: quanto a loja deixaria de vender sem o canal. O que as plataformas reportam e o último clique
+        respondem outra pergunta (quem tocou a venda por último) e inflam canais que só pegam quem já ia comprar.</p>
+    </article>
+    <article class="panel">
+      <h3>A base</h3>
+      <ul class="plain">
+        <li><strong>[[orders]]</strong> pedidos pagos de [[period_long]]</li>
+        <li><strong>[[revenue]]</strong> em vendas e <strong>[[spend]]</strong> em mídia paga</li>
+        <li>Investimento, impressões e cliques por dia, canal e estado</li>
+        <li>Um teste geográfico: Meta desligada em 7 estados por 6 semanas</li>
+      </ul>
+    </article>
+  </div>
+
+  <h3 class="sub-h">De onde vem cada número</h3>
+  <ul class="provenance">
+    <li class="prov prov-data">
+      <p class="prov-tag">Registrado no banco da loja</p>
+      <p>Pedidos e receita por estado, investimento, impressões e cliques de cada canal por dia e estado, calendário de feriados e
+        promoções, preços praticados.</p>
+    </li>
+    <li class="prov prov-test">
+      <p class="prov-tag">Medido no experimento</p>
+      <p>A receita que a Meta gera: comparação entre os estados onde ela foi desligada e os que seguiram o plano.</p>
+    </li>
+    <li class="prov prov-assumed">
+      <p class="prov-tag">Estimado pelo modelo</p>
+      <p>O retorno de cada canal, onde ele satura e a divisão recomendada, sempre com faixa de incerteza.</p>
+    </li>
+    <li class="prov prov-none">
+      <p class="prov-tag">Simulado</p>
+      <p>Todo o banco. Por isso existe uma "verdade" para conferir o modelo, que ele nunca vê. [[truth_note]]</p>
+    </li>
+  </ul>
+
+  <details class="explainer" id="como-ler">
+    <summary>Como ler: o que significa cada termo</summary>
+    <dl class="glossary">
+      <div><dt>Retorno por real</dt><dd>Receita incremental ÷ investimento: quanto de venda o canal causou para cada R$ 1. Na Meta,
+        <strong>[[ex_meta_roi]]</strong>. Abaixo de R$ 1, o canal devolve menos do que custa (antes da margem).</dd></div>
+      <div><dt>Receita incremental</dt><dd>A venda que não aconteceria sem o canal. Não é a venda atribuída pela plataforma.</dd></div>
+      <div><dt>Retorno do próximo real</dt><dd>Quanto rende o real seguinte, não a média. É ele que decide onde colocar a verba.</dd></div>
+      <div><dt>Saturação</dt><dd>Cada real a mais num canal rende menos que o anterior: o público mais fácil já foi alcançado.</dd></div>
+      <div><dt>Controle sintético</dt><dd>Uma combinação dos estados que não foram testados, montada para andar junto com os testados
+        antes do teste. Depois, mostra o que teria acontecido sem ele.</dd></div>
+      <div><dt>Calibração</dt><dd>Dar ao modelo o resultado do teste como mais uma evidência, com o próprio erro do teste.</dd></div>
+    </dl>
+  </details>
+</section>
+
+<!-- ========================================================== 02 Resumo -->
+<section id="resumo" aria-labelledby="h-resumo">
+  <p class="kicker">02 · Resumo executivo</p>
+  <h2 id="h-resumo">[[h_resumo]]</h2>
+  <div class="summary">[[summary]]</div>
+  <ol class="takeaways">[[takeaways]]</ol>
+  <p class="jump"><a href="#recomendacao">Ver a recomendação ↓</a></p>
+</section>
+
+<!-- ========================================================== 03 Problema -->
+<section id="problema" aria-labelledby="h-problema">
+  <p class="kicker">03 · O problema</p>
+  <h2 id="h-problema">[[h_problema]]</h2>
+  <figure class="card" aria-labelledby="h-problema" aria-describedby="d-problema">
+    <figcaption><p id="d-problema">[[d_problema]]</p></figcaption>
+    <div class="chart" data-chart="problem"></div>
+  </figure>
+  <details class="data-twin" open><summary>Ver o investimento por trimestre</summary>[[table_problema]]</details>
+</section>
+
+<!-- ========================================================== 04 Teste -->
+<section id="teste" aria-labelledby="h-teste">
+  <p class="kicker">04 · O teste</p>
+  <h2 id="h-teste">[[h_teste]]</h2>
+  <div class="grid-2">
+    <figure class="card" aria-labelledby="h-teste" aria-describedby="d-teste">
+      <figcaption><h3>O que aconteceu e o que teria acontecido</h3><p id="d-teste">[[d_teste]]</p></figcaption>
+      <div class="chart chart-tall" data-chart="geolift"></div>
+    </figure>
+    <figure class="card" aria-labelledby="t-mapa">
+      <figcaption><h3 id="t-mapa">Onde foi o teste</h3>
+        <div class="segmented" role="group" aria-label="Camada do mapa" id="map-layers">
+          <button type="button" data-layer="grupo" aria-pressed="true">Testados</button>
+          <button type="button" data-layer="variacao_teste" aria-pressed="false">Receita no teste</button>
+          <button type="button" data-layer="receita_12m" aria-pressed="false">Receita 12m</button>
+        </div>
+      </figcaption>
+      <div class="map-wrap" id="map"></div>
+      <p class="map-tip" id="map-tip" aria-live="polite"></p>
+      <p class="footnote" id="map-note"></p>
+    </figure>
+  </div>
+  <div class="callout callout-meta">[[callout_teste]]</div>
+  <details class="data-twin" open><summary>Ver a receita semana a semana</summary>[[table_teste]]</details>
+</section>
+
+<!-- ========================================================== 05 Correção -->
+<section id="correcao" aria-labelledby="h-calib">
+  <p class="kicker">05 · O que o teste mudou</p>
+  <h2 id="h-calib">[[h_calib]]</h2>
+  <figure class="card" aria-labelledby="h-calib" aria-describedby="d-calib">
+    <figcaption><p id="d-calib">[[d_calib]]</p></figcaption>
+    <div class="chart chart-tall" data-chart="calib"></div>
+  </figure>
+  <details class="data-twin" open><summary>Ver o retorno de cada canal</summary>[[table_calib]]</details>
+</section>
+
+<!-- ========================================================== 06 Saturação -->
+<section id="saturacao" aria-labelledby="h-curvas">
+  <p class="kicker">06 · Onde cada canal satura</p>
+  <h2 id="h-curvas">[[h_curvas]]</h2>
+  <p class="muted">Receita incremental por dia para cada nível de investimento diário mantido, com faixa de 90%. O ponto é o investimento de
+    hoje. Painéis do canal em que o próximo real rende mais para o que rende menos. <strong>Escala vertical livre</strong>: compare a forma
+    das curvas, não a altura entre painéis.</p>
+  <div class="multiples" id="multiples" data-order='[[order_curves]]'></div>
+  <details class="data-twin" open><summary>Ver o retorno no investimento atual</summary>[[table_curvas]]</details>
+</section>
+
+<!-- ========================================================== 07 Recomendação -->
+<section id="recomendacao" aria-labelledby="h-reco">
+  <p class="kicker">07 · Recomendação</p>
+  <h2 id="h-reco">[[h_reco]]</h2>
+  <figure class="card" aria-labelledby="h-reco" aria-describedby="d-reco">
+    <figcaption><p id="d-reco">[[d_reco]]</p></figcaption>
+    <div class="chart" data-chart="alloc"></div>
+  </figure>
+  <details class="data-twin" open><summary>Ver a verba e a receita por canal</summary>[[table_reco]]</details>
+  <h3 class="sub-h">O que fazer no próximo mês</h3>
+  <ol class="reco">[[reco_items]]</ol>
+</section>
+
+<!-- ========================================================== 08 Incerteza -->
+<section id="incerteza" aria-labelledby="h-incerteza">
+  <p class="kicker">08 · Incerteza</p>
+  <h2 id="h-incerteza">[[h_incerteza]]</h2>
+  <figure class="card" aria-labelledby="h-incerteza" aria-describedby="d-incerteza">
+    <figcaption><p id="d-incerteza">[[d_incerteza]]</p></figcaption>
+    <div class="chart" data-chart="gain"></div>
+  </figure>
+  <details class="data-twin" open><summary>Ver os cenários</summary>[[table_incerteza]]</details>
+</section>
+
+<!-- ========================================================== Método -->
+<section id="metodo" aria-label="Método">
+  <details class="method">
+    <summary>Como os números foram calculados</summary>
+    <div class="method-body">
+      <h3>Fonte</h3>
+      <p>Banco do repositório <code>dados-sinteticos-ecommerce-tecidos</code> (Tecelã Tecidos, dados simulados com semente fixa), lido
+        pelos marts do dbt: vendas por dia e estado, mídia por dia, canal e estado, calendário e preço. Período: [[period_long]].</p>
+      <h3>Teste geográfico</h3>
+      <p>Controle sintético bayesiano (CausalPy) na receita semanal; cada estado dividido pela própria média antes do teste. Conferência
+        por diferença em diferenças. Antes de ler o resultado, o poder do desenho foi simulado com testes falsos em datas passadas.</p>
+      <div class="chart" data-chart="power"></div>
+      <h3>Modelo de mix de mídia</h3>
+      <ul>
+        <li>Receita diária = base (tendência, sazonalidade anual, dia da semana, feriados, datas comerciais, promoções, preço, e-mail) +
+          a soma dos canais.</li>
+        <li>Cada canal tem efeito que se arrasta por até 14 dias (adstock) e retorno decrescente (saturação logística). PyMC-Marketing.</li>
+        <li>Calibração: o resultado do teste, convertido para escala nacional (dividido pela fatia da verba da Meta nos estados testados),
+          entra como mais uma evidência sobre a curva da Meta.</li>
+        <li>Validação fora da amostra: treino até uma data, previsão das semanas seguintes; nunca com dias sorteados.</li>
+      </ul>
+      [[table_diag]]
+      [[table_backtest]]
+      <h3>Otimização</h3>
+      <p>Verba total fixa, cada canal entre 50% e 150% do investimento médio dos últimos 90 dias, máxima receita incremental esperada.
+        A mesma divisão é avaliada em cada cenário do modelo para dar a faixa e a probabilidade de ganho.</p>
+      <h3>Limites</h3>
+      <p>O modelo é nacional; o mapa é só para ler o teste. Efeitos de marca de longo prazo ficam na base. Só a Meta foi testada: os
+        outros canais valem o que o histórico permite. Os dados são simulados: o método transfere, os números não.</p>
+      <h3>Como reproduzir</h3>
+      <p>Código, testes e documentação em <a href="https://github.com/arielabade/marketing-mix-modeling">github.com/arielabade/marketing-mix-modeling</a>.
+        Esta página é gerada por <code>make report</code> a partir de <code>reports/</code>.</p>
+    </div>
+  </details>
+</section>
+</main>
+<script>
+  document.querySelectorAll("details.data-twin").forEach(function (d) { d.open = false; });
+</script>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <span class="brand">[[symbol]]<span class="brand-name">ABADE</span></span>
+    <p>Relatório ABADE · dados simulados · <a href="#metodo">método</a> e
+      <a href="https://github.com/arielabade/marketing-mix-modeling">código</a></p>
+    <a href="#topo" class="to-top">Voltar ao topo ↑</a>
+  </div>
+</footer>
+
+<script type="application/json" id="dashboard-data">[[data]]</script>
+<script type="application/json" id="geo-data">[[geo]]</script>
+<noscript><style>.chart{display:none}</style></noscript>
+</body>
+</html>

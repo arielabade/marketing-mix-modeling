@@ -60,8 +60,10 @@ def test_dashboard_is_written(run):
     tmp, _ = run
     html = (tmp / "dashboard" / "index.html").read_text()
     assert "dados simulados" in html.lower()
-    data = json.loads((tmp / "dashboard" / "data.json").read_text())
+    raw = html.split('id="dashboard-data">', 1)[1].split("</script>", 1)[0]
+    data = json.loads(raw)
     assert "geolift" in data and "allocation" in data
+    assert (tmp / "dashboard" / "plotly-cartesian-4.1.1.min.js").exists()
 
 
 def test_api_serves_the_trained_model(run):
