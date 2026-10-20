@@ -40,8 +40,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.path import Path as MplPath
 from matplotlib.patches import FancyBboxPatch, PathPatch
+from matplotlib.path import Path as MplPath
 
 # --- Brand surfaces and ink ------------------------------------------------
 CARBON = "#050505"    # chart surface, straight from the brand panels
@@ -212,7 +212,7 @@ def bars(ax, positions, values, colors, width: float = 0.62, base: float = 0.0,
     )
     radius = radius_px * data_per_px
 
-    for pos, value, color in zip(positions, values, colors):
+    for pos, value, color in zip(positions, values, colors, strict=False):
         patch = PathPatch(
             _rounded_bar_path(pos - width / 2, pos + width / 2, base, value,
                               radius, horizontal),
@@ -224,7 +224,7 @@ def bars(ax, positions, values, colors, width: float = 0.62, base: float = 0.0,
         # A near-zero bar still needs its label clear of the tick row, so the
         # offset is a share of the axis span rather than of the bar.
         pad = label_pad * (span[1] - span[0])
-        for pos, value, color, text in zip(positions, values, colors, labels):
+        for pos, value, _color, text in zip(positions, values, colors, labels, strict=False):
             text = text if isinstance(text, str) else label_fmt.format(text)
             if horizontal:
                 ax.text(value + np.sign(value or 1) * pad, pos, text, va="center",
@@ -258,7 +258,7 @@ def grouped_bars(ax, categories, series: dict[str, object], colors=SERIES,
     gap = gap_px * px
     bar_w = (width - gap * (n - 1)) / n
 
-    for index, ((name, values), color) in enumerate(zip(series.items(), colors)):
+    for index, ((name, values), color) in enumerate(zip(series.items(), colors, strict=False)):
         offset = -width / 2 + bar_w / 2 + index * (bar_w + gap)
         values = np.asarray(list(values), dtype=float)
         bars(ax, positions + offset, values, color, width=bar_w,
@@ -333,7 +333,7 @@ def kpi_strip(items, width: float = 12.0, height: float = 1.9,
     )
     fig.patches.append(backdrop)
 
-    for index, (ax, (value, caption)) in enumerate(zip(axes, items)):
+    for index, (ax, (value, caption)) in enumerate(zip(axes, items, strict=False)):
         ax.axis("off")
         colour = COBALT if index == accent_index else IVORY
         ax.text(0.0, 0.70, value, ha="left", va="center", fontsize=30,

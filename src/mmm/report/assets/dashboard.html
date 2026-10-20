@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tecelã · Onde investir o próximo real</title>
+<meta name="description" content="Geo-lift + MMM bayesiano calibrado + otimizador de verba para a Tecelã Tecidos (dados simulados).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-locales@2.35.2/pt-br.js"></script>
+<style>
+  :root {
+    --carbon: #050505; --graphite: #1B1C1F; --slate: #3A3E46; --steel: #6B717A;
+    --ivory: #F6F5F0; --paper: #FFFFFF; --line: #E2E0D8; --cobalt: #5B6CFF; --cobalt-ink: #3546D9;
+    --amber: #BD8620; --crimson: #C23A50; --teal: #1F9B73;
+    --bg: var(--ivory); --surface: var(--paper); --ink: var(--carbon); --muted: var(--steel);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #050505; --surface: #121316; --ink: #F6F5F0; --muted: #9BA2AA; --line: #24262B; --cobalt-ink: #8C98FF;
+    }
+  }
+  :root[data-theme="dark"] { --bg: #050505; --surface: #121316; --ink: #F6F5F0; --muted: #9BA2AA; --line: #24262B; --cobalt-ink: #8C98FF; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: Lato, "Helvetica Neue", Arial, sans-serif;
+         font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 64px; }
+  header.top { display: flex; align-items: center; gap: 14px; padding: 22px 0 14px; }
+  .mark { width: 40px; height: 40px; border-radius: 10px; background: var(--carbon); display: grid; place-items: center; flex: none; }
+  .mark svg { width: 24px; height: 24px; }
+  .brand { font-weight: 900; letter-spacing: .08em; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+  .brand b { color: var(--ink); }
+  .warn { background: var(--carbon); color: var(--ivory); border-radius: 12px; padding: 10px 16px; font-size: 14px;
+          display: flex; gap: 10px; align-items: center; margin-bottom: 28px; }
+  .warn strong { color: #C8B680; letter-spacing: .04em; }
+  h1 { font-size: clamp(28px, 4.4vw, 44px); line-height: 1.12; font-weight: 900; margin: 0 0 12px; letter-spacing: -.01em; }
+  h2 { font-size: clamp(21px, 2.6vw, 28px); line-height: 1.2; font-weight: 900; margin: 0 0 6px; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 760px; margin: 0 0 26px; }
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--cobalt-ink); margin-bottom: 6px; }
+  section { margin-top: 56px; }
+  .sub { color: var(--muted); margin: 0 0 18px; max-width: 820px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 16px; }
+  .kpi .v { font-size: 30px; font-weight: 900; line-height: 1.1; }
+  .kpi .l { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .kpi.accent { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+  .kpi.accent .l { color: rgba(255,255,255,.85); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-map { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; align-items: start; }
+  @media (max-width: 820px) { .grid2, .grid-map { grid-template-columns: 1fr; } }
+  .chart { width: 100%; height: 380px; }
+  .chart.tall { height: 470px; }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .seg button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+                border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: right; padding: 9px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  .table-wrap { overflow-x: auto; }
+  .up { color: var(--teal); font-weight: 700; } .down { color: var(--crimson); font-weight: 700; }
+  .reco { background: var(--carbon); color: var(--ivory); border-radius: 20px; padding: 26px 24px; }
+  .reco h2 { color: var(--ivory); }
+  .reco p { color: #C9CDD2; }
+  .reco ol { margin: 10px 0 0; padding-left: 22px; } .reco li { margin: 8px 0; }
+  details { margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+  details summary { cursor: pointer; font-weight: 700; }
+  details p, details li { color: var(--muted); font-size: 15px; }
+  code { font-size: 13px; background: rgba(91,108,255,.1); padding: 1px 5px; border-radius: 5px; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .themebtn { margin-left: auto; font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface);
+              color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5 3 21.5h4l1.9-4.3h6.2l1.9 4.3h4L12 2.5Zm-1.7 11.4L12 9.9l1.7 4Z" fill="#F6F5F0"/><circle cx="19" cy="5" r="2.2" fill="#5B6CFF"/></svg>
+    </div>
+    <div class="brand"><b>ABADE</b> · Mídia orientada por causalidade · Tecelã Tecidos</div>
+    <button class="themebtn" id="themebtn" type="button">Tema</button>
+  </header>
+
+  <div class="warn" role="note"><strong>DADOS SIMULADOS</strong><span>Loja fictícia, números gerados por um simulador com efeitos conhecidos. Serve para demonstrar o método, não para decidir verba de uma empresa real.</span></div>
+
+  <div class="kicker">Resumo executivo</div>
+  <h1 id="h-headline">Onde colocar o próximo real</h1>
+  <p class="lede" id="lede"></p>
+  <div class="kpis" id="kpis"></div>
+
+  <section id="s-geolift">
+    <div class="kicker">1 · Experimento geográfico</div>
+    <h2 id="h-geolift">Resultado do geo-lift</h2>
+    <p class="sub" id="sub-geolift"></p>
+    <div class="grid-map">
+      <div class="card"><div id="c-geolift" class="chart tall" role="img" aria-label="Receita semanal das UFs de tratamento contra o controle sintético"></div></div>
+      <div class="card">
+        <div class="seg" role="group" aria-label="Camada do mapa" id="mapseg">
+          <button type="button" data-layer="grupo" aria-pressed="true">Desenho do teste</button>
+          <button type="button" data-layer="variacao_teste" aria-pressed="false">Receita no teste</button>
+          <button type="button" data-layer="receita_12m" aria-pressed="false">Receita 12m</button>
+          <button type="button" data-layer="midia_12m" aria-pressed="false">Mídia 12m</button>
+        </div>
+        <div id="c-map" class="chart tall"></div>
+        <p class="note" id="map-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-roi">
+    <div class="kicker">2 · Contribuição e retorno por canal</div>
+    <h2 id="h-roi">Quanto cada canal devolve por real investido</h2>
+    <p class="sub">Investimento ao lado da receita incremental que o modelo calibrado atribui a cada canal no período. Retorno = receita incremental ÷ investimento; a barra fina mostra o intervalo de 94%.</p>
+    <div class="grid2">
+      <div class="card"><div id="c-spend-rev" class="chart" role="img" aria-label="Investimento e receita incremental por canal"></div></div>
+      <div class="card"><div id="c-roi" class="chart" role="img" aria-label="Retorno por canal com intervalo"></div></div>
+    </div>
+  </section>
+
+  <section id="s-curves">
+    <div class="kicker">3 · Saturação</div>
+    <h2 id="h-curves">Onde cada canal para de render</h2>
+    <p class="sub">Receita incremental diária por nível de investimento diário (curva média e faixa de 90%). O ponto marca o investimento atual. Quanto mais plana a curva no ponto, menos rende o próximo real.</p>
+    <div class="seg" role="group" aria-label="Canal" id="curveseg"></div>
+    <div class="grid2">
+      <div class="card"><div id="c-curve" class="chart" role="img" aria-label="Curva de resposta do canal"></div></div>
+      <div class="card"><div id="c-marginal" class="chart" role="img" aria-label="Retorno do próximo real por canal"></div></div>
+    </div>
+  </section>
+
+  <section id="s-calib">
+    <div class="kicker">4 · Por que calibrar</div>
+    <h2 id="h-calib">O MMM sem experimento confunde Meta e TikTok</h2>
+    <p class="sub" id="sub-calib"></p>
+    <div class="card"><div id="c-calib" class="chart" role="img" aria-label="Retorno por canal: sem calibração, calibrado e verdade do simulador"></div></div>
+  </section>
+
+  <section id="s-alloc">
+    <div class="kicker">5 · Realocação</div>
+    <h2 id="h-alloc">Mesma verba, outra divisão</h2>
+    <p class="sub" id="sub-alloc"></p>
+    <div class="grid2">
+      <div class="card"><div id="c-alloc" class="chart" role="img" aria-label="Verba atual e recomendada por canal"></div></div>
+      <div class="card table-wrap"><table id="t-alloc"></table></div>
+    </div>
+  </section>
+
+  <section id="s-uncert">
+    <div class="kicker">6 · Incerteza</div>
+    <h2 id="h-uncert">Quão certa é a recomendação</h2>
+    <p class="sub" id="sub-uncert"></p>
+    <div class="grid2">
+      <div class="card"><div id="c-gain" class="chart" role="img" aria-label="Distribuição do ganho de receita da recomendação"></div></div>
+      <div class="card"><div id="c-fit" class="chart" role="img" aria-label="Receita semanal observada e ajustada pelo modelo"></div></div>
+    </div>
+  </section>
+
+  <section id="s-reco">
+    <div class="reco">
+      <div class="kicker" style="color:#A7B0FF">7 · Recomendação</div>
+      <h2 id="h-reco">Verba do próximo mês</h2>
+      <p id="p-reco"></p>
+      <ol id="l-reco"></ol>
+    </div>
+    <details>
+      <summary>Método (para quem quer os detalhes)</summary>
+      <ul>
+        <li><b>Geo-lift.</b> A Meta foi desligada por 6 semanas em 7 UFs (≈25% da verba da Meta). Um controle sintético bayesiano (CausalPy) monta, a partir das UFs que seguiram o plano, a receita que as UFs desligadas teriam tido; a diferença é o efeito. Uma diferença-em-diferenças confere com outra premissa.</li>
+        <li><b>MMM bayesiano.</b> Receita diária = base + tendência + sazonalidade anual + dia da semana + feriados, datas e promoções + preço + e-mail + Σ canais. Cada canal passa por adstock geométrico (efeito que se arrasta por dias) e saturação logística (retorno decrescente). PyMC-Marketing, NUTS.</li>
+        <li><b>Calibração.</b> O resultado do geo-lift, convertido para escala nacional (÷ fatia das UFs testadas), entra como uma segunda verossimilhança sobre a curva da Meta, com o próprio erro do teste. O modelo continua livre para discordar; só deixa de poder ignorar o experimento.</li>
+        <li><b>Otimizador.</b> Maximiza a receita incremental esperada (média sobre a posterior) com a verba total fixa e cada canal entre 50% e 150% do investimento atual. A mesma alocação é avaliada em cada amostra da posterior para dar o intervalo e a probabilidade de ser melhor que a divisão atual.</li>
+        <li><b>Validação.</b> Como os dados são simulados, o retorno verdadeiro de cada canal é conhecido e aparece no gráfico 4. O código de modelagem não tem acesso a ele (há um teste automatizado que falha se tiver).</li>
+      </ul>
+    </details>
+  </section>
+
+  <footer>
+    <span id="foot"></span> · Código: <a href="https://github.com/arielabade/marketing-mix-modeling" style="color:inherit">github.com/arielabade/marketing-mix-modeling</a>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const GEO = /*__GEO__*/null;
+(function () {
+  const root = document.documentElement;
+  const btn = document.getElementById('themebtn');
+  try { const t = localStorage.getItem('abade-theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  btn.addEventListener('click', () => {
+    const dark = getComputedStyle(root).getPropertyValue('--bg').trim().toLowerCase() === '#050505';
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('abade-theme', root.dataset.theme); } catch (e) {}
+    renderAll();
+  });
+})();
+
+const L = (c) => (DATA.labels && DATA.labels[c]) || c;
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const brl = (v, d = 0) => (v == null || isNaN(v)) ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: d, maximumFractionDigits: d});
+const brlK = (v) => (v == null || isNaN(v)) ? '—' : (Math.abs(v) >= 1e6 ? 'R$ ' + (v / 1e6).toLocaleString('pt-BR', {maximumFractionDigits: 2}) + ' mi' : 'R$ ' + (v / 1e3).toLocaleString('pt-BR', {maximumFractionDigits: 1}) + ' mil');
+const pct = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v * 100).toLocaleString('pt-BR', {maximumFractionDigits: d, minimumFractionDigits: d}) + '%';
+const num = (v, d = 2) => (v == null || isNaN(v)) ? '—' : Number(v).toLocaleString('pt-BR', {maximumFractionDigits: d, minimumFractionDigits: d});
+const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
+
+function layout(extra = {}) {
+  return Object.assign({
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: {family: 'Lato, Helvetica Neue, Arial, sans-serif', color: css('--ink'), size: 13},
+    margin: {l: 56, r: 16, t: 16, b: 90},
+    xaxis: {gridcolor: css('--line'), zerolinecolor: css('--line'), automargin: true},
+    yaxis: {gridcolor: css('--line'), zerolinecolor: css('--line'), automargin: true},
+    legend: {orientation: 'h', y: -0.32, x: 0},
+    hoverlabel: {font: {family: 'Lato'}},
+  }, extra);
+}
+const CFG = {displayModeBar: false, responsive: true, locale: 'pt-BR'};
+const COBALT = '#5B6CFF', SLATE_C = () => css('--muted'), AMBER = '#BD8620', CRIMSON = '#C23A50', TEAL = '#1F9B73';
+
+function roiRows(kind) { if (kind === 'calibrated' && DATA.roi && !DATA.roi.calibrated) kind = 'uncalibrated'; return (DATA.roi && DATA.roi[kind]) || []; }
+function alloc() { return (DATA.allocation && (DATA.allocation.calibrated || DATA.allocation.uncalibrated)) || null; }
+
+function renderHeadline() {
+  const a = alloc(); const g = DATA.geolift; const rc = roiRows('calibrated');
+  const byCh = Object.fromEntries(rc.map(r => [r.channel, r]));
+  const best = [...rc].sort((x, y) => y.roi_mean - x.roi_mean)[0];
+  const worst = [...rc].sort((x, y) => x.roi_mean - y.roi_mean)[0];
+  if (a) {
+    const up = a.channels.filter(c => c.change_pct > 0.02).sort((x, y) => y.change_pct - x.change_pct);
+    const down = a.channels.filter(c => c.change_pct < -0.02).sort((x, y) => x.change_pct - y.change_pct);
+    set('h-headline', `Mesma verba, ${brlK(a.gain_mean)} a mais de receita por mês: ${up.length ? 'mais ' + up.slice(0, 2).map(c => L(c.channel)).join(' e ') : ''}${up.length && down.length ? ', menos ' : ''}${down.slice(0, 2).map(c => L(c.channel)).join(' e ')}`);
+    set('lede', `A loja investe ${brlK(a.total_budget)} por mês em mídia paga. Redistribuir essa verba pelo retorno marginal de cada canal, medido por um MMM calibrado com um experimento geográfico, gera em média ${brlK(a.gain_mean)} de receita incremental a mais no mês (90% de chance de ficar entre ${brlK(a.gain_low)} e ${brlK(a.gain_high)}).`);
+  }
+  const k = [];
+  if (a) k.push(`<div class="kpi accent"><div class="v">${brlK(a.gain_mean)}</div><div class="l">receita incremental a mais por mês com a nova divisão (mesma verba)</div></div>`);
+  if (a) k.push(`<div class="kpi"><div class="v">${pct(a.prob_better)}</div><div class="l">probabilidade de a nova divisão render mais que a atual</div></div>`);
+  if (g) k.push(`<div class="kpi"><div class="v">${pct(-g.relative_lift_mean, 1)}</div><div class="l">queda de receita nas UFs onde a Meta foi desligada (geo-lift)</div></div>`);
+  if (byCh.meta && byCh.tiktok) k.push(`<div class="kpi"><div class="v">${num(byCh.meta.roi_mean)} × ${num(byCh.tiktok.roi_mean)}</div><div class="l">R$ de receita por R$ investido: Meta × TikTok (${DATA.roi && DATA.roi.calibrated ? 'modelo calibrado' : 'modelo sem calibração'})</div></div>`);
+  set('kpis', k.join(''));
+}
+
+function renderGeolift() {
+  const g = DATA.geolift; if (!g) return;
+  const s = g.series;
+  set('h-geolift', `Desligar a Meta em ${g.treated.length} UFs custou ${brlK(g.lost_revenue_mean)} em ${Math.round(g.test_days / 7)} semanas: ${brl(g.roi_mean, 2)} de receita para cada real que deixou de ser investido`);
+  set('sub-geolift', `Linha cheia: receita semanal das UFs de tratamento (${g.treated.join(', ')}). Tracejada: o controle sintético, ou seja, a receita que elas teriam tido com a Meta ligada, construída a partir das UFs que seguiram o plano. A área sombreada é o período de teste mais 2 semanas de resfriamento. Queda estimada de ${pct(-g.relative_lift_mean, 1)} (intervalo de 95%: ${pct(-g.relative_lift_high, 1)} a ${pct(-g.relative_lift_low, 1)}); a diferença-em-diferenças dá ${pct(-g.did.relative_lift_mean, 1)}. Veredito: <b>${({channel_is_incremental: 'a Meta é incremental', real_but_small: 'efeito real, mas pequeno', inconclusive: 'inconclusivo', no_effect: 'sem efeito'})[g.decision.verdict] || g.decision.verdict}</b>.`);
+  const x = s.week, firstPost = s.post.indexOf(true);
+  const traces = [
+    {x, y: s.synthetic_high, type: 'scatter', mode: 'lines', line: {width: 0}, hoverinfo: 'skip', showlegend: false},
+    {x, y: s.synthetic_low, type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty', fillcolor: 'rgba(91,108,255,.15)', name: 'Faixa de 95% do sintético', hoverinfo: 'skip'},
+    {x, y: s.synthetic, type: 'scatter', mode: 'lines', name: 'Sem o teste (controle sintético)', line: {color: COBALT, dash: 'dash', width: 2}, hovertemplate: '%{x|%d/%m/%Y}<br>Sintético: R$ %{y:,.0f}<extra></extra>'},
+    {x, y: s.observed, type: 'scatter', mode: 'lines', name: 'Observado nas UFs de tratamento', line: {color: css('--ink'), width: 2.5}, hovertemplate: '%{x|%d/%m/%Y}<br>Observado: R$ %{y:,.0f}<extra></extra>'},
+  ];
+  Plotly.react('c-geolift', traces, layout({
+    yaxis: {title: 'Receita semanal (R$)', gridcolor: css('--line'), tickformat: ',.0f', separatethousands: true},
+    shapes: firstPost >= 0 ? [{type: 'rect', xref: 'x', yref: 'paper', x0: x[firstPost], x1: x[x.length - 1], y0: 0, y1: 1, fillcolor: 'rgba(189,134,32,.10)', line: {width: 0}}] : [],
+    annotations: firstPost >= 0 ? [{x: x[firstPost], y: 1, yref: 'paper', text: 'Meta desligada', showarrow: false, xanchor: 'left', font: {color: AMBER, size: 12}}] : [],
+    separators: ',.',
+  }), CFG);
+}
+
+let mapLayer = 'grupo';
+function lerp(c1, c2, t) {
+  const h = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const [a, b] = [h(c1), h(c2)];
+  return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+function ramp(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  for (let i = 1; i < stops.length; i++) if (t <= stops[i][0]) {
+    const [t0, c0] = stops[i - 1], [t1, c1] = stops[i];
+    return lerp(c0, c1, (t - t0) / ((t1 - t0) || 1));
+  }
+  return stops[stops.length - 1][1];
+}
+function renderMap() {
+  // Plain SVG choropleth: no WebGL, no tile server, works on any browser and offline.
+  const rows = DATA.regional || []; const el = document.getElementById('c-map');
+  if (!rows.length || !GEO) { el.innerHTML = ''; return; }
+  const by = Object.fromEntries(rows.map(r => [r.uf, r]));
+  const lat0 = -15 * Math.PI / 180, k = Math.cos(lat0);
+  const P = ([lon, lat]) => [(lon + 74.5) * k * 10, (6 - lat) * 10];
+  const W = (74.5 - 34) * k * 10, H = 40.5 * 10;
+  let color, legend, tip;
+  const line = css('--line') || '#E2E0D8', ink = css('--ink');
+  if (mapLayer === 'grupo') {
+    color = (r) => r && r.grupo === 'tratamento' ? COBALT : line;
+    legend = `<span style="display:inline-block;width:12px;height:12px;background:${COBALT};border-radius:3px;vertical-align:-1px"></span> Tratamento (Meta desligada) &nbsp; <span style="display:inline-block;width:12px;height:12px;background:${line};border-radius:3px;vertical-align:-1px"></span> Controle`;
+    tip = (r, n) => `${n}: ${r && r.grupo === 'tratamento' ? 'tratamento, Meta desligada' : 'controle, seguiu o plano'}`;
+    set('map-note', 'Azul: UFs onde a Meta foi desligada por 6 semanas. As demais formam o controle sintético. SP, RJ e MG ficaram no controle: desligá-las custaria caro demais.');
+  } else if (mapLayer === 'variacao_teste') {
+    const vals = rows.map(r => r.variacao_teste).filter(v => v != null && !isNaN(v));
+    const m = Math.max(0.10, ...vals.map(Math.abs));
+    color = (r) => (r && r.variacao_teste != null && !isNaN(r.variacao_teste)) ? ramp([[0, CRIMSON], [0.5, '#F2F1EC'], [1, TEAL]], (r.variacao_teste / m + 1) / 2) : line;
+    legend = `<span style="display:inline-block;width:140px;height:10px;border-radius:5px;background:linear-gradient(90deg,${CRIMSON},#F2F1EC,${TEAL});vertical-align:-1px"></span> &nbsp;${pct(-m)} a +${pct(m)} vs. controle`;
+    tip = (r, n) => `${n} (${r ? r.grupo : '—'}): ${r ? pct(r.variacao_teste, 1) : '—'} vs. tendência do controle`;
+    set('map-note', 'Receita média diária no teste (com resfriamento) contra o pré-período, descontada a variação das UFs de controle. UFs pequenas oscilam muito por acaso; o efeito confiável é o agregado do gráfico ao lado.');
+  } else {
+    const mx = Math.max(...rows.map(r => r[mapLayer] || 0));
+    color = (r) => ramp([[0, '#EEF0FF'], [0.35, '#8C98FF'], [1, '#2333B8']], Math.sqrt((r ? r[mapLayer] : 0) / (mx || 1)));
+    legend = `<span style="display:inline-block;width:140px;height:10px;border-radius:5px;background:linear-gradient(90deg,#EEF0FF,#8C98FF,#2333B8);vertical-align:-1px"></span> &nbsp;R$ 0 a ${brlK(mx)} (escala raiz)`;
+    tip = (r, n) => `${n}: ${brlK(r ? r[mapLayer] : 0)} ${mapLayer === 'receita_12m' ? 'de receita' : 'em mídia paga'} em 12 meses`;
+    set('map-note', mapLayer === 'receita_12m' ? 'Receita paga por UF de entrega nos últimos 12 meses.' : 'Investimento em mídia paga por UF nos últimos 12 meses (relatório geográfico das plataformas).');
+  }
+  const paths = GEO.features.map(f => {
+    const d = f.geometry.coordinates.map(poly => poly.map(ring => 'M' + ring.map(pt => P(pt).map(v => v.toFixed(1)).join(',')).join('L') + 'Z').join('')).join('');
+    const r = by[f.id];
+    return `<path d="${d}" fill="${color(r)}" stroke="${css('--surface') || '#fff'}" stroke-width="0.8" data-tip="${tip(r, f.properties.nome).replace(/"/g, '&quot;')}"><title>${tip(r, f.properties.nome)}</title></path>`;
+  }).join('');
+  const labels = GEO.features.map(f => {
+    let sx = 0, sy = 0, n = 0;
+    const ring = f.geometry.coordinates.reduce((b, poly) => poly[0].length > b.length ? poly[0] : b, []);
+    ring.forEach(pt => { const [x, y] = P(pt); sx += x; sy += y; n++; });
+    return `<text x="${(sx / n).toFixed(1)}" y="${(sy / n).toFixed(1)}" font-size="9" text-anchor="middle" fill="${ink}" opacity=".7" pointer-events="none">${f.id}</text>`;
+  }).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W.toFixed(0)} ${H}" style="width:100%;height:calc(100% - 28px)" role="img" aria-label="Mapa por UF">${paths}${labels}</svg><div class="note" style="margin:4px 0 0">${legend}</div><div id="map-tip" class="note" style="min-height:1.4em;font-weight:700;color:var(--ink)"></div>`;
+  el.querySelectorAll('path').forEach(p => {
+    p.addEventListener('mouseenter', () => { p.setAttribute('stroke', ink); p.setAttribute('stroke-width', '1.6'); set('map-tip', p.dataset.tip); });
+    p.addEventListener('mouseleave', () => { p.setAttribute('stroke', css('--surface') || '#fff'); p.setAttribute('stroke-width', '0.8'); });
+    p.addEventListener('click', () => set('map-tip', p.dataset.tip));
+  });
+}
+document.getElementById('mapseg').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  mapLayer = b.dataset.layer;
+  document.querySelectorAll('#mapseg button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  renderMap();
+});
+
+function renderROI() {
+  const rc = [...roiRows('calibrated')].sort((a, b) => b.roi_mean - a.roi_mean); if (!rc.length) return;
+  const names = rc.map(r => L(r.channel));
+  const top = rc[0], low = rc[rc.length - 1];
+  set('h-roi', `${L(top.channel)} devolve ${brl(top.roi_mean, 2)} por real; ${L(low.channel)}, ${brl(low.roi_mean, 2)}`);
+  Plotly.react('c-spend-rev', [
+    {x: names, y: rc.map(r => r.spend), type: 'bar', name: 'Investimento', marker: {color: SLATE_C()}, hovertemplate: '%{x}<br>Investimento: R$ %{y:,.0f}<extra></extra>'},
+    {x: names, y: rc.map(r => r.contribution), type: 'bar', name: 'Receita incremental', marker: {color: COBALT}, hovertemplate: '%{x}<br>Receita incremental: R$ %{y:,.0f}<extra></extra>'},
+  ], layout({barmode: 'group', yaxis: {title: 'R$ no período', gridcolor: css('--line'), tickformat: '~s'}, separators: ',.'}), CFG);
+  Plotly.react('c-roi', [{
+    x: names, y: rc.map(r => r.roi_mean), type: 'bar', marker: {color: rc.map(r => r.roi_mean >= 1 ? COBALT : SLATE_C())},
+    error_y: {type: 'data', symmetric: false, array: rc.map(r => r.roi_high - r.roi_mean), arrayminus: rc.map(r => r.roi_mean - r.roi_low), color: css('--ink'), thickness: 1.2, width: 4},
+    hovertemplate: '%{x}<br>R$ %{y:.2f} por R$ investido<extra></extra>', name: 'Retorno',
+  }], layout({yaxis: {title: 'R$ de receita por R$ investido', gridcolor: css('--line')}, showlegend: false, separators: ',.',
+    shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: AMBER, dash: 'dot', width: 1.5}}],
+    annotations: [{xref: 'paper', x: 1, y: 1, text: 'empata', showarrow: false, xanchor: 'right', yanchor: 'bottom', font: {color: AMBER, size: 11}}]}), CFG);
+}
+
+let curveCh = null;
+function renderCurves() {
+  const cv = DATA.curves && (DATA.curves.calibrated || DATA.curves.uncalibrated); if (!cv) return;
+  const chs = Object.keys(cv);
+  if (!curveCh) curveCh = chs[0];
+  set('curveseg', chs.map(c => `<button type="button" data-ch="${c}" aria-pressed="${c === curveCh}">${L(c)}</button>`).join(''));
+  const c = cv[curveCh];
+  const i0 = c.spend.reduce((b, s, i) => Math.abs(s - c.current) < Math.abs(c.spend[b] - c.current) ? i : b, 0);
+  Plotly.react('c-curve', [
+    {x: c.spend, y: c.high, mode: 'lines', line: {width: 0}, hoverinfo: 'skip', showlegend: false},
+    {x: c.spend, y: c.low, mode: 'lines', line: {width: 0}, fill: 'tonexty', fillcolor: 'rgba(91,108,255,.15)', name: 'Faixa de 90%', hoverinfo: 'skip'},
+    {x: c.spend, y: c.mean, mode: 'lines', line: {color: COBALT, width: 2.5}, name: 'Receita incremental diária', hovertemplate: 'Investimento R$ %{x:,.0f}/dia<br>Receita incremental R$ %{y:,.0f}/dia<extra></extra>'},
+    {x: [c.spend[i0]], y: [c.mean[i0]], mode: 'markers', marker: {size: 11, color: css('--ink')}, name: 'Investimento atual', hovertemplate: 'Atual: R$ %{x:,.0f}/dia<extra></extra>'},
+  ], layout({xaxis: {title: 'Investimento diário (R$)', gridcolor: css('--line'), tickformat: ',.0f'}, yaxis: {title: 'Receita incremental diária (R$)', gridcolor: css('--line'), tickformat: ',.0f'}, separators: ',.'}), CFG);
+  const marg = chs.map(ch => { const k = cv[ch]; const j = k.spend.reduce((b, s, i) => Math.abs(s - k.current) < Math.abs(k.spend[b] - k.current) ? i : b, 0); return {ch, m: k.marginal[j]}; }).sort((a, b) => b.m - a.m);
+  set('h-curves', `O próximo real rende mais em ${L(marg[0].ch)} (${brl(marg[0].m, 2)}) e menos em ${L(marg[marg.length - 1].ch)} (${brl(marg[marg.length - 1].m, 2)})`);
+  Plotly.react('c-marginal', [{x: marg.map(m => L(m.ch)), y: marg.map(m => m.m), type: 'bar', marker: {color: marg.map(m => m.m >= 1 ? COBALT : SLATE_C())},
+    hovertemplate: '%{x}<br>Próximo real: R$ %{y:.2f}<extra></extra>'}],
+    layout({yaxis: {title: 'Receita do próximo R$ investido', gridcolor: css('--line')}, showlegend: false, separators: ',.',
+      shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: AMBER, dash: 'dot', width: 1.5}}]}), CFG);
+}
+document.getElementById('curveseg').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return; curveCh = b.dataset.ch; renderCurves();
+});
+
+function renderCalib() {
+  const u = Object.fromEntries(roiRows('uncalibrated').map(r => [r.channel, r]));
+  const c = Object.fromEntries(roiRows('calibrated').map(r => [r.channel, r]));
+  const t = Object.fromEntries((DATA.roi_vs_truth || []).map(r => [r.channel, r]));
+  const chs = Object.keys(c).sort((a, b) => c[b].roi_mean - c[a].roi_mean); if (!chs.length) return;
+  const tr = (src, name, color) => ({
+    x: chs.map(L), y: chs.map(ch => src[ch] && src[ch].roi_mean), type: 'bar', name, marker: {color},
+    error_y: {type: 'data', symmetric: false, array: chs.map(ch => src[ch] ? src[ch].roi_high - src[ch].roi_mean : 0), arrayminus: chs.map(ch => src[ch] ? src[ch].roi_mean - src[ch].roi_low : 0), color: css('--ink'), thickness: 1, width: 3},
+    hovertemplate: `%{x}<br>${name}: R$ %{y:.2f}<extra></extra>`,
+  });
+  const traces = [tr(u, 'MMM sem calibração', SLATE_C()), tr(c, 'MMM calibrado com o geo-lift', COBALT)];
+  if (Object.keys(t).length) traces.push({x: chs.map(L), y: chs.map(ch => t[ch] && t[ch].roi_true), type: 'scatter', mode: 'markers', name: 'Verdade do simulador', marker: {symbol: 'diamond', size: 12, color: AMBER, line: {color: css('--ink'), width: 1}}, hovertemplate: '%{x}<br>Verdadeiro: R$ %{y:.2f}<extra></extra>'});
+  Plotly.react('c-calib', traces, layout({barmode: 'group', yaxis: {title: 'R$ de receita por R$ investido', gridcolor: css('--line')}, separators: ',.'}), CFG);
+  const ev = DATA.evaluation && DATA.evaluation.roi_recovery;
+  if (u.meta && c.meta && u.tiktok && c.tiktok) {
+    set('h-calib', `Sem o experimento, o modelo dava ${brl(u.meta.roi_mean, 2)} à Meta e ${brl(u.tiktok.roi_mean, 2)} ao TikTok; com ele, ${brl(c.meta.roi_mean, 2)} e ${brl(c.tiktok.roi_mean, 2)}`);
+    let txt = 'Meta e TikTok têm a verba decidida juntos (TikTok ≈ 32% da Meta, todos os dias): no histórico os dois sobem e descem ao mesmo tempo, e o MMM não consegue separar quem gerou a venda. O geo-lift desligou só a Meta em parte do país, que é a informação que faltava.';
+    if (ev && ev.uncalibrated && ev.calibrated) txt +=` Contra a verdade do simulador, o erro médio de retorno por canal cai de ${brl(ev.uncalibrated.mean_abs_roi_error, 2)} para ${brl(ev.calibrated.mean_abs_roi_error, 2)}.`;
+    set('sub-calib', txt);
+  }
+}
+
+function renderAlloc() {
+  const a = alloc(); if (!a) return;
+  const rows = [...a.channels].sort((x, y) => y.recommended_daily - x.recommended_daily);
+  const names = rows.map(r => L(r.channel));
+  set('sub-alloc', `Verba total de ${brlK(a.total_budget)} em ${a.horizon_days} dias, igual à atual. Cada canal pode ir de 50% a 150% do que recebe hoje: fora disso a curva estaria extrapolando o que os dados viram. Receita incremental esperada sobe de ${brlK(a.revenue_current.mean)} para ${brlK(a.revenue_recommended.mean)}.`);
+  Plotly.react('c-alloc', [
+    {x: names, y: rows.map(r => r.current_daily_at_budget * a.horizon_days), type: 'bar', name: 'Atual', marker: {color: SLATE_C()}, hovertemplate: '%{x}<br>Atual: R$ %{y:,.0f}<extra></extra>'},
+    {x: names, y: rows.map(r => r.recommended_total), type: 'bar', name: 'Recomendado', marker: {color: COBALT}, hovertemplate: '%{x}<br>Recomendado: R$ %{y:,.0f}<extra></extra>'},
+  ], layout({barmode: 'group', yaxis: {title: `Verba em ${a.horizon_days} dias (R$)`, gridcolor: css('--line'), tickformat: '~s'}, separators: ',.'}), CFG);
+  set('t-alloc', `<thead><tr><th>Canal</th><th>Atual</th><th>Recomendado</th><th>Variação</th><th>Receita incr.</th><th>Próximo R$</th></tr></thead><tbody>` +
+    rows.map(r => `<tr><td>${L(r.channel)}</td><td>${brlK(r.current_daily_at_budget * a.horizon_days)}</td><td><b>${brlK(r.recommended_total)}</b></td><td class="${r.change_pct > 0.005 ? 'up' : r.change_pct < -0.005 ? 'down' : ''}">${r.change_pct > 0 ? '+' : ''}${pct(r.change_pct)}</td><td>${brlK(r.revenue_recommended)}</td><td>${brl(r.marginal_roi_recommended, 2)}</td></tr>`).join('') + `</tbody>`);
+}
+
+function renderUncert() {
+  const a = alloc(); const k = DATA.allocation && DATA.allocation.calibrated ? 'calibrated' : 'uncalibrated';
+  const d = DATA.gain_draws && DATA.gain_draws[k]; if (!a || !d) return;
+  set('h-uncert', `${pct(a.prob_better)} de chance de a nova divisão render mais; ganho entre ${brlK(a.gain_low)} e ${brlK(a.gain_high)} no mês`);
+  const bt = DATA.evaluation && DATA.evaluation.backtest;
+  const diag = DATA.diagnostics && DATA.diagnostics.models && DATA.diagnostics.models.calibrated;
+  let t = 'Esquerda: cada barra é um cenário plausível do modelo (amostras da posterior) para o ganho da nova divisão sobre a atual, com a mesma verba.';
+  if (bt && bt.length) t += ` Direita: receita semanal observada e ajustada. Em teste fora da amostra (treino até uma data, previsão dos ${bt[0].test_end ? Math.round((new Date(bt[0].test_end) - new Date(bt[0].test_start)) / 864e5 / 7) + 1 : 13} semanas seguintes), o erro da receita foi de ${bt.map(b => pct(b.wape, 1)).join(' e ')} (WAPE diário).`;
+  if (diag) t += ` Convergência: r-hat máximo ${num(diag.diagnostics.rhat_max, 3)}, ${diag.diagnostics.divergences} divergências.`;
+  set('sub-uncert', t);
+  Plotly.react('c-gain', [{x: d, type: 'histogram', nbinsx: 30, marker: {color: COBALT, line: {color: css('--bg'), width: 1}}, hovertemplate: 'Ganho R$ %{x:,.0f}<br>%{y} cenários<extra></extra>'}],
+    layout({xaxis: {title: 'Ganho de receita no mês (R$)', gridcolor: css('--line'), tickformat: ',.0f'}, yaxis: {title: 'Cenários', gridcolor: css('--line')}, showlegend: false, bargap: 0.04, separators: ',.',
+      shapes: [{type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 1, line: {color: CRIMSON, width: 1.5, dash: 'dot'}}]}), CFG);
+  const f = DATA.fit_weekly;
+  if (f) Plotly.react('c-fit', [
+    {x: f.week, y: f.y, mode: 'lines', name: 'Observada', line: {color: css('--ink'), width: 2}, hovertemplate: '%{x|%d/%m/%Y}<br>R$ %{y:,.0f}<extra></extra>'},
+    {x: f.week, y: f.pred, mode: 'lines', name: 'Modelo', line: {color: COBALT, width: 2, dash: 'dot'}, hovertemplate: '%{x|%d/%m/%Y}<br>Modelo R$ %{y:,.0f}<extra></extra>'},
+  ], layout({yaxis: {title: 'Receita semanal (R$)', gridcolor: css('--line'), tickformat: '~s'}, separators: ',.'}), CFG);
+}
+
+function renderReco() {
+  const a = alloc(); if (!a) return;
+  const rows = [...a.channels].sort((x, y) => (y.recommended_total - y.current_daily_at_budget * a.horizon_days) - (x.recommended_total - x.current_daily_at_budget * a.horizon_days));
+  set('h-reco', `Para o próximo mês: ${brlK(a.total_budget)} divididos assim, ${brlK(a.gain_mean)} a mais de receita esperada`);
+  set('p-reco', `Valores para ${a.horizon_days} dias. Intervalo de 90% do ganho: ${brlK(a.gain_low)} a ${brlK(a.gain_high)}. Revisar todo mês com o modelo atualizado, e repetir o geo-lift em outro canal (o próximo candidato é o canal com maior incerteza no gráfico 4).`);
+  set('l-reco', rows.map(r => {
+    const delta = r.recommended_total - r.current_daily_at_budget * a.horizon_days;
+    return `<li><b>${L(r.channel)}:</b> ${brl(r.recommended_total)} (${delta >= 0 ? '+' : ''}${brl(delta)}, ${r.change_pct > 0 ? '+' : ''}${pct(r.change_pct)}). Próximo real rende ${brl(r.marginal_roi_recommended, 2)}${r.at_upper_bound ? ' · no teto de 150%' : r.at_lower_bound ? ' · no piso de 50%' : ''}.</li>`;
+  }).join(''));
+}
+
+function renderAll() {
+  if (!DATA) { set('lede', 'Sem dados: rode <code>make train evaluate optimize report</code>.'); return; }
+  renderHeadline(); renderGeolift(); renderMap(); renderROI(); renderCurves(); renderCalib(); renderAlloc(); renderUncert(); renderReco();
+  set('foot', `Perfil ${DATA.profile} · ${DATA.diagnostics ? 'janela ' + DATA.diagnostics.window.start + ' a ' + DATA.diagnostics.window.end : ''}`);
+}
+renderAll();
+</script>
+</body>
+</html>
