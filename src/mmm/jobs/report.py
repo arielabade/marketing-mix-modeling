@@ -64,6 +64,23 @@ def _curves(cfg: dict, reg: Registry, name: str) -> dict:
     return out
 
 
+def _spend_story(cfg: dict) -> dict:
+    """Weekly spend per channel and the daily Meta x TikTok correlation (the "problem" chart)."""
+    from ..data.features import spend_wide
+
+    mart = load_mart(cfg)
+    daily = spend_wide(mart.media, cfg["channels"], mart.dates)
+    weekly = daily.resample("W-MON", label="left", closed="left").sum()
+    weekly = weekly[daily.resample("W-MON", label="left", closed="left").size().values == 7]
+    corr = {}
+    for a in cfg["channels"]:
+        for b in cfg["channels"]:
+            if a < b and daily[a].std() > 0 and daily[b].std() > 0:
+                corr[f"{a}|{b}"] = round(float(daily[a].corr(daily[b])), 3)
+    return {"week": weekly.index.strftime("%Y-%m-%d").tolist(),
+            **{c: weekly[c].round(0).tolist() for c in cfg["channels"]}, "corr": corr}
+
+
 def _regional(cfg: dict, geolift: dict | None) -> list[dict]:
     """Per-state figures for the map: test group, revenue, media spend, revenue change in the test."""
     mart = load_mart(cfg)
@@ -128,6 +145,7 @@ def build_data(cfg: dict) -> dict:
             data.setdefault("gain_draws", {})[k] = _gain_draws(cfg, reg, a, NAMES[k])
             data.setdefault("curves", {})[k] = _curves(cfg, reg, NAMES[k])
     data["regional"] = _regional(cfg, geo)
+    data["spend"] = _spend_story(cfg)
     return data
 
 
